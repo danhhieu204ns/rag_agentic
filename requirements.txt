@@ -21,3 +21,9 @@ pandas
 
 # Utilities
 requests
+
+# App backend
+fastapi
+uvicorn[standard]
+sqlalchemy
+python-multipart

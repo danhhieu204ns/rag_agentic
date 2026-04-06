@@ -81,6 +81,40 @@ cd rag-cookbooks
 ```
 Once you are in the 'rag-cookbooks' directory, follow the detailed implementation for each technique.
 
+## Fullstack RAG App (FastAPI + React)
+
+This repository now also includes a fullstack application:
+
+- Backend: `app-backend` (FastAPI)
+- Frontend: `app-frontend` (React + Vite)
+
+### Features
+
+- Chat UI for question answering with chat memory
+- Document management UI for upload, edit metadata, embedding, delete
+- Global FAISS index built from embedded document chunks
+
+### Run Backend
+
+```bash
+pip install -r app-backend/requirements.txt
+uvicorn app.main:app --reload --app-dir app-backend
+```
+
+Required environment variable:
+
+- `GROQ_API_KEY`
+
+### Run Frontend
+
+```bash
+cd app-frontend
+npm install
+npm run dev
+```
+
+Frontend default API target is `http://localhost:8000/api`.
+
 
 
 
