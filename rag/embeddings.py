@@ -72,8 +72,14 @@ def create_embeddings(
             max_seq_length=max_seq_length,
         )
 
+    if provider_normalized == "gemini":
+        from rag.llm import create_gemini_embedding
+        return create_gemini_embedding(
+            model=model_name
+        )
+
     raise ValueError(
-        f"Unsupported embedding provider: {provider}. Supported providers: huggingface"
+        f"Unsupported embedding provider: {provider}. Supported providers: huggingface, gemini"
     )
 
 
