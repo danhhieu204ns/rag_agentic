@@ -70,16 +70,16 @@ graph TD
   FE_DOC --> FE_API
 
   FE_CHAT_FS -->|GET /chat/sessions| CHAT_SESSIONS
-  FE_CHAT_FM -->|GET /chat/sessions/{id}/messages| CHAT_MESSAGES
+  FE_CHAT_FM -->|GET /chat/sessions/:id/messages| CHAT_MESSAGES
   FE_CHAT_CS -->|POST /chat/sessions| CHAT_CREATE
-  FE_CHAT_DS -->|DELETE /chat/sessions/{id}| CHAT_DELETE
+  FE_CHAT_DS -->|DELETE /chat/sessions/:id| CHAT_DELETE
   FE_CHAT_SM -->|POST /chat/query| CHAT_QUERY
 
   FE_DOC_FD -->|GET /documents| DOC_LIST
   FE_DOC_UP -->|POST /documents/upload| DOC_UPLOAD
-  FE_DOC_ST -->|PUT /documents/{id}| DOC_UPDATE
-  FE_DOC_EM -->|POST /documents/{id}/embed| DOC_EMBED
-  FE_DOC_DD -->|DELETE /documents/{id}| DOC_DELETE
+  FE_DOC_ST -->|PUT /documents/:id| DOC_UPDATE
+  FE_DOC_EM -->|POST /documents/:id/embed| DOC_EMBED
+  FE_DOC_DD -->|DELETE /documents/:id| DOC_DELETE
   FE_DOC_RI -->|POST /documents/reindex| DOC_REINDEX
 
   BE_MAIN --> BE_STARTUP --> BE_DB_INIT
@@ -150,7 +150,7 @@ sequenceDiagram
   API->>DB: Insert Document(status=uploaded)
   API-->>UI: DocumentRead
 
-  UI->>API: embedDocument(id) -> POST /documents/{id}/embed
+  UI->>API: embedDocument(id) -> POST /documents/:id/embed
   API->>FSU: Read stored file
   API->>PROC: load_source_documents(path)
   API->>PROC: split_source_documents(docs, chunk_size, chunk_overlap)
@@ -160,7 +160,7 @@ sequenceDiagram
   API->>DB: Update Document(status=embedded)
   API-->>UI: EmbedDocumentResponse
 
-  UI->>API: deleteDocument(id) -> DELETE /documents/{id}
+  UI->>API: deleteDocument(id) -> DELETE /documents/:id
   API->>FSU: Remove file
   API->>DB: Delete Document (+ cascade chunks)
   API->>RAG: rebuild_index_from_chunks(remaining_chunks)
@@ -207,7 +207,7 @@ sequenceDiagram
   CHAT->>DB: Insert ChatMessage(role=assistant, sources_json)
   CHAT-->>UI: ChatQueryResponse(answer, sources, session_id)
 
-  UI->>CHAT: GET /chat/sessions/{id}/messages
+  UI->>CHAT: GET /chat/sessions/:id/messages
   CHAT->>DB: Read messages
   CHAT->>RAG: parse_sources(sources_json)
   CHAT-->>UI: messages with parsed sources
