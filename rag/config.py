@@ -30,8 +30,10 @@ class NaiveRAGConfig:
     chunk_size: int = 500
     chunk_overlap: int = 50
 
-    embedding_provider: str = "huggingface"
-    embedding_model_name: str = "AITeamVN/Vietnamese_Embedding_v2"
+    # embedding_provider: str = "huggingface"
+    # embedding_model_name: str = "AITeamVN/Vietnamese_Embedding_v2"
+    embedding_provider: str = "gemini"
+    embedding_model_name: str = "models/text-embedding-004"
     embedding_device: str = "cpu"
     embedding_max_seq_length: int = 2048
 
