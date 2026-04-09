@@ -108,6 +108,7 @@ class NaiveRAGPipeline:
                 documents,
                 chunk_size=self.config.chunk_size,
                 chunk_overlap=self.config.chunk_overlap,
+                method=self.config.chunking_method,
             )
 
             self.vectorstore = build_faiss_vectorstore(split_docs, embeddings)

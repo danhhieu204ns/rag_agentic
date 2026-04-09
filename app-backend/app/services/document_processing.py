@@ -1,13 +1,26 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
 
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_core.documents import Document
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_text_splitters import CharacterTextSplitter, Language, RecursiveCharacterTextSplitter
 
 
 SUPPORTED_EXTENSIONS = {".pdf", ".txt", ".md"}
+ChunkingMethod = Literal["recursive", "character", "markdown", "python"]
+
+MARKDOWN_SEPARATORS = [
+    "\n## ",
+    "\n### ",
+    "\n#### ",
+    "\n- ",
+    "\n* ",
+    "\n",
+    " ",
+    "",
+]
 
 
 
@@ -29,11 +42,40 @@ def split_source_documents(
     documents: list[Document],
     chunk_size: int,
     chunk_overlap: int,
+    chunking_method: ChunkingMethod = "recursive",
 ) -> list[Document]:
-    """Split loaded documents into chunks for embedding."""
+    """Split loaded documents into chunks for embedding.
 
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size,
-        chunk_overlap=chunk_overlap,
-    )
+    Supported methods: recursive, character, markdown, python.
+    """
+
+    if chunking_method == "recursive":
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
+    elif chunking_method == "character":
+        splitter = CharacterTextSplitter(
+            separator="\n\n",
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
+    elif chunking_method == "markdown":
+        splitter = RecursiveCharacterTextSplitter(
+            separators=MARKDOWN_SEPARATORS,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
+    elif chunking_method == "python":
+        splitter = RecursiveCharacterTextSplitter.from_language(
+            language=Language.PYTHON,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        )
+    else:
+        raise ValueError(
+            f"Unsupported chunking method: {chunking_method}. "
+            "Supported methods: recursive, character, markdown, python"
+        )
+
     return splitter.split_documents(documents)

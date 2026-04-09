@@ -27,6 +27,13 @@ from ..services.rag_runtime import (
 router = APIRouter(prefix="/chat", tags=["chat"])
 
 
+def _build_title_from_first_question(message: str) -> str:
+    cleaned = " ".join(message.strip().split())
+    if not cleaned:
+        return "New chat"
+    return cleaned[:255]
+
+
 
 def _session_to_read(item: ChatSession) -> ChatSessionRead:
     return ChatSessionRead(
@@ -103,23 +110,38 @@ def list_messages(session_id: int, db: Session = Depends(get_db)) -> list[ChatMe
 def query_chat(payload: ChatQueryRequest, db: Session = Depends(get_db)) -> ChatQueryResponse:
     """Run one RAG query, save both user and assistant messages."""
 
+    user_text = payload.message.strip()
+
     session: ChatSession | None = None
     if payload.session_id is not None:
         session = db.get(ChatSession, payload.session_id)
         if session is None:
             raise HTTPException(status_code=404, detail="Session not found.")
 
+    first_question_title = _build_title_from_first_question(user_text)
+
     if session is None:
-        draft_title = payload.message.strip()[:60] or "New chat"
-        session = ChatSession(title=draft_title)
+        session = ChatSession(title=first_question_title)
         db.add(session)
         db.commit()
         db.refresh(session)
+    else:
+        first_user_message_exists = (
+            db.query(ChatMessage.id)
+            .filter(ChatMessage.session_id == session.id, ChatMessage.role == "user")
+            .first()
+            is not None
+        )
+        if not first_user_message_exists:
+            session.title = first_question_title
+            db.add(session)
+            db.commit()
+            db.refresh(session)
 
     user_message = ChatMessage(
         session_id=session.id,
         role="user",
-        content=payload.message.strip(),
+        content=user_text,
         sources_json=None,
     )
     db.add(user_message)
@@ -134,14 +156,14 @@ def query_chat(payload: ChatQueryRequest, db: Session = Depends(get_db)) -> Chat
 
     top_k = payload.top_k or settings.retriever_k
     retrieved_docs = similarity_search(
-        payload.message,
+        user_text,
         top_k=top_k,
         document_ids=payload.document_ids,
     )
 
     try:
         answer = generate_answer(
-            question=payload.message,
+            question=user_text,
             context_docs=retrieved_docs,
             history_messages=history,
         )

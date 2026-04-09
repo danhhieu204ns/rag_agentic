@@ -33,7 +33,7 @@ def create_groq_llm(
 
 
 def create_gemini_embedding(
-    model: str = "models/text-embedding-004",
+    model: str = "text-embedding-004",
 ) -> GoogleGenerativeAIEmbeddings:
     """Khoi tao Embedding backend Gemini.
 
@@ -50,4 +50,8 @@ def create_gemini_embedding(
     if not os.getenv("GOOGLE_API_KEY"):
         raise ValueError("Please set GOOGLE_API_KEY in your environment before running this pipeline.")
 
-    return GoogleGenerativeAIEmbeddings(model=model)
+    normalized_model = model.strip()
+    if normalized_model.startswith("models/"):
+        normalized_model = normalized_model.split("/", 1)[1]
+
+    return GoogleGenerativeAIEmbeddings(model=normalized_model)

@@ -16,11 +16,14 @@ class Settings:
     uploads_dir: Path
     index_dir: Path
     database_path: Path
+    embedding_provider: str
     embedding_model_name: str
     embedding_device: str
     embedding_max_seq_length: int
+    gemini_api_key: str | None
     chunk_size: int
     chunk_overlap: int
+    chunking_method: str
     retriever_k: int
     llm_model: str
     llm_temperature: float
@@ -55,6 +58,14 @@ def get_settings() -> Settings:
     uploads_dir.mkdir(parents=True, exist_ok=True)
     index_dir.parent.mkdir(parents=True, exist_ok=True)
 
+    embedding_provider = os.getenv("EMBEDDING_PROVIDER", "huggingface").strip().lower()
+    default_embedding_model = (
+        "text-embedding-004"
+        if embedding_provider == "gemini"
+        else "AITeamVN/Vietnamese_Embedding_v2"
+    )
+    gemini_api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+
     return Settings(
         app_name=os.getenv("APP_NAME", "RAG App Backend"),
         app_env=os.getenv("APP_ENV", "development"),
@@ -63,13 +74,16 @@ def get_settings() -> Settings:
         uploads_dir=uploads_dir,
         index_dir=index_dir,
         database_path=storage_dir / "app.db",
+        embedding_provider=embedding_provider,
         embedding_model_name=os.getenv(
-            "EMBEDDING_MODEL_NAME", "AITeamVN/Vietnamese_Embedding_v2"
+            "EMBEDDING_MODEL_NAME", default_embedding_model
         ),
         embedding_device=os.getenv("EMBEDDING_DEVICE", "cpu"),
         embedding_max_seq_length=_int_env("EMBEDDING_MAX_SEQ_LENGTH", 2048),
+        gemini_api_key=gemini_api_key,
         chunk_size=_int_env("CHUNK_SIZE", 500),
         chunk_overlap=_int_env("CHUNK_OVERLAP", 50),
+        chunking_method=os.getenv("CHUNKING_METHOD", "recursive").lower(),
         retriever_k=_int_env("RETRIEVER_K", 4),
         llm_model=os.getenv("LLM_MODEL", "llama-3.3-70b-versatile"),
         llm_temperature=_float_env("LLM_TEMPERATURE", 0.0),

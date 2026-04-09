@@ -12,10 +12,10 @@ function App() {
         </div>
         <nav className="tabs">
           <NavLink to="/chat" className={({ isActive }) => (isActive ? "tab active" : "tab")}>
-            Hoi dap
+            Hỏi đáp
           </NavLink>
           <NavLink to="/documents" className={({ isActive }) => (isActive ? "tab active" : "tab")}>
-            Quan li tai lieu
+            Quản lý tài liệu
           </NavLink>
         </nav>
       </header>

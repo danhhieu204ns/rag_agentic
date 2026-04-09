@@ -36,11 +36,14 @@ Required:
 
 Optional tuning:
 
+- `EMBEDDING_PROVIDER` (`huggingface` or `gemini`)
 - `EMBEDDING_MODEL_NAME`
 - `EMBEDDING_DEVICE`
 - `EMBEDDING_MAX_SEQ_LENGTH`
+- `GEMINI_API_KEY` (or `GOOGLE_API_KEY` when using Gemini embeddings)
 - `CHUNK_SIZE`
 - `CHUNK_OVERLAP`
+- `CHUNKING_METHOD` (`recursive`, `character`, `markdown`, `python`)
 - `RETRIEVER_K`
 - `LLM_MODEL`
 - `LLM_TEMPERATURE`

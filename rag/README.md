@@ -39,6 +39,7 @@ The CLI entrypoint is in `run_naive_rag.py`.
 | `--embedding-model` | string | `AITeamVN/Vietnamese_Embedding_v2` | Embedding model name used by HuggingFace embeddings. |
 | `--embedding-device` | string | `cpu` | Device for embedding inference (`cpu`, `cuda`, etc.). |
 | `--max-seq-length` | int | `2048` | Maximum sequence length for embedding model backend (when supported). |
+| `--chunking-method` | string | `recursive` | Chunking strategy: `recursive`, `character`, `markdown`, `python`. |
 | `--llm-model` | string | `llama-3.3-70b-versatile` | Groq chat model used for answer generation. |
 | `--temperature` | float | `0.0` | Sampling temperature for the LLM. |
 | `--k` | int | `4` | Number of retrieved chunks per query. |
@@ -52,6 +53,7 @@ These fields are defined in `config.py` and used by `NaiveRAGPipeline`.
 | `data_path` | `data/bao_cao.pdf` | Source document path. |
 | `chunk_size` | `500` | Chunk size for text splitting. |
 | `chunk_overlap` | `50` | Overlap between adjacent chunks. |
+| `chunking_method` | `recursive` | Chunking strategy: `recursive`, `character`, `markdown`, `python`. |
 | `embedding_provider` | `huggingface` | Embedding backend selector. |
 | `embedding_model_name` | `AITeamVN/Vietnamese_Embedding_v2` | Model identifier for embeddings. |
 | `embedding_device` | `cpu` | Device used by embedding model. |

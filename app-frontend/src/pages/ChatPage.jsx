@@ -76,19 +76,31 @@ function ChatPage() {
       await fetchMessages(sessionId);
     } catch (err) {
       const detail = err?.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Khong the gui cau hoi.");
+      setError(typeof detail === "string" ? detail : "Không thể gửi câu hỏi.");
     } finally {
       setIsSending(false);
     }
   }
 
+  function handleChatInputKeyDown(event) {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    if (event.shiftKey || event.nativeEvent.isComposing) {
+      return;
+    }
+
+    sendMessage(event);
+  }
+
   useEffect(() => {
-    fetchSessions().catch(() => setError("Khong the tai danh sach phien chat."));
+    fetchSessions().catch(() => setError("Không thể tải danh sách phiên chat."));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    fetchMessages(activeSessionId).catch(() => setError("Khong the tai lich su chat."));
+    fetchMessages(activeSessionId).catch(() => setError("Không thể tải tin nhắn."));
   }, [activeSessionId]);
 
   return (
@@ -118,12 +130,12 @@ function ChatPage() {
 
       <section className="panel panel-main">
         <div className="panel-head">
-          <h2>{activeSession ? activeSession.title : "Hoi dap"}</h2>
+          <h2>{activeSession ? activeSession.title : "Hỏi đáp"}</h2>
         </div>
 
         <div className="messages">
           {messages.length === 0 ? (
-            <p className="muted">Chua co tin nhan. Hay dat cau hoi dau tien.</p>
+            <p className="muted">Chưa có tin nhắn. Hãy đặt câu hỏi đầu tiên.</p>
           ) : (
             messages.map((message) => (
               <article key={message.id} className={`message ${message.role}`}>
@@ -150,11 +162,12 @@ function ChatPage() {
           <textarea
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Nhap cau hoi..."
+            onKeyDown={handleChatInputKeyDown}
+            placeholder="Nhập câu hỏi..."
             rows={3}
           />
           <button type="submit" disabled={isSending}>
-            {isSending ? "Dang gui..." : "Gui"}
+            {isSending ? "Đang gửi..." : "Gửi"}
           </button>
         </form>
 

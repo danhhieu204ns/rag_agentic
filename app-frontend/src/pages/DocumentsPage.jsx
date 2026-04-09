@@ -46,7 +46,7 @@ function DocumentsPage() {
       await fetchDocuments();
     } catch (err) {
       const detail = err?.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Khong the upload tai lieu.");
+      setError(typeof detail === "string" ? detail : "Không thể upload tài liệu.");
     } finally {
       setIsBusy(false);
     }
@@ -63,7 +63,7 @@ function DocumentsPage() {
       await fetchDocuments();
     } catch (err) {
       const detail = err?.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Khong the cap nhat tieu de.");
+      setError(typeof detail === "string" ? detail : "Không thể cập nhật tiêu đề.");
     } finally {
       setIsBusy(false);
     }
@@ -77,7 +77,7 @@ function DocumentsPage() {
       await fetchDocuments();
     } catch (err) {
       const detail = err?.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Khong the embedding tai lieu.");
+      setError(typeof detail === "string" ? detail : "Không thể embedding tài liệu.");
     } finally {
       setIsBusy(false);
     }
@@ -91,7 +91,7 @@ function DocumentsPage() {
       await fetchDocuments();
     } catch (err) {
       const detail = err?.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Khong the xoa tai lieu.");
+      setError(typeof detail === "string" ? detail : "Không thể xóa tài liệu.");
     } finally {
       setIsBusy(false);
     }
@@ -104,23 +104,23 @@ function DocumentsPage() {
       await api.post("/documents/reindex");
     } catch (err) {
       const detail = err?.response?.data?.detail;
-      setError(typeof detail === "string" ? detail : "Khong the rebuild index.");
+      setError(typeof detail === "string" ? detail : "Không thể rebuild index.");
     } finally {
       setIsBusy(false);
     }
   }
 
   useEffect(() => {
-    fetchDocuments().catch(() => setError("Khong the tai danh sach tai lieu."));
+    fetchDocuments().catch(() => setError("Không thể tải danh sách tài liệu."));
   }, []);
 
   return (
     <div className="panel panel-main">
       <div className="panel-head">
-        <h2>Quan li tai lieu</h2>
+        <h2>Quản lý tài liệu</h2>
         <div className="panel-actions">
-          <span className="muted">Tai lieu: {documents.length}</span>
-          <span className="muted">Tong chunks: {totalChunks}</span>
+          <span className="muted">Tài liệu: {documents.length}</span>
+          <span className="muted">Tổng chunks: {totalChunks}</span>
           <button onClick={rebuildIndex} disabled={isBusy}>
             Rebuild index
           </button>
@@ -140,7 +140,7 @@ function DocumentsPage() {
           onChange={(event) => setUploadTitle(event.target.value)}
         />
         <button type="submit" disabled={isBusy || !selectedFile}>
-          {isBusy ? "Dang xu ly..." : "Upload"}
+          {isBusy ? "Đang xử lý..." : "Upload"}
         </button>
       </form>
 
@@ -149,11 +149,11 @@ function DocumentsPage() {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Tieu de</th>
-              <th>File goc</th>
+              <th>Tiêu đề</th>
+              <th>File gốc</th>
               <th>Status</th>
               <th>Chunks</th>
-              <th>Hanh dong</th>
+              <th>Hành động</th>
             </tr>
           </thead>
           <tbody>

@@ -155,6 +155,7 @@ def embed_document(document_id: int, db: Session = Depends(get_db)) -> EmbedDocu
             loaded_documents,
             chunk_size=settings.chunk_size,
             chunk_overlap=settings.chunk_overlap,
+            chunking_method=settings.chunking_method,
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
@@ -182,7 +183,19 @@ def embed_document(document_id: int, db: Session = Depends(get_db)) -> EmbedDocu
     db.commit()
 
     all_chunks = db.query(DocumentChunk).order_by(DocumentChunk.id.asc()).all()
-    indexed_count = rebuild_index_from_chunks(all_chunks)
+    try:
+        indexed_count = rebuild_index_from_chunks(all_chunks)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "Failed to rebuild embedding index. "
+                f"Provider={settings.embedding_provider}, model={settings.embedding_model_name}. "
+                f"Root cause: {exc}"
+            ),
+        ) from exc
 
     return EmbedDocumentResponse(
         document_id=document_id,
@@ -196,7 +209,19 @@ def rebuild_global_index(db: Session = Depends(get_db)) -> EmbedDocumentResponse
     """Rebuild global vector index from all saved chunks."""
 
     all_chunks = db.query(DocumentChunk).order_by(DocumentChunk.id.asc()).all()
-    indexed_count = rebuild_index_from_chunks(all_chunks)
+    try:
+        indexed_count = rebuild_index_from_chunks(all_chunks)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "Failed to rebuild embedding index. "
+                f"Provider={settings.embedding_provider}, model={settings.embedding_model_name}. "
+                f"Root cause: {exc}"
+            ),
+        ) from exc
     return EmbedDocumentResponse(
         document_id=0,
         chunks_created=indexed_count,

@@ -6,16 +6,33 @@ from pathlib import Path
 
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
 from langchain_groq import ChatGroq
 from langchain_huggingface import HuggingFaceEmbeddings
 
 from ..core.settings import settings
 from ..models import ChatMessage, DocumentChunk
 
-_embeddings: HuggingFaceEmbeddings | None = None
+_embeddings: Embeddings | None = None
 _vectorstore: FAISS | None = None
 _llm: ChatGroq | None = None
 
+
+def _normalize_gemini_embedding_model(model_name: str) -> str:
+    """Normalize Gemini embedding model to the format expected by google-genai SDK."""
+
+    normalized = model_name.strip()
+    if normalized.startswith("models/"):
+        normalized = normalized.split("/", 1)[1]
+    if not normalized:
+        raise ValueError("EMBEDDING_MODEL_NAME for Gemini cannot be empty.")
+    if "/" in normalized:
+        raise ValueError(
+            "Invalid Gemini embedding model name. "
+            "Use a Gemini model such as 'text-embedding-004' "
+            "or 'models/text-embedding-004'."
+        )
+    return normalized
 
 
 def _index_files_exist(index_dir: Path) -> bool:
@@ -23,19 +40,48 @@ def _index_files_exist(index_dir: Path) -> bool:
 
 
 
-def get_embeddings() -> HuggingFaceEmbeddings:
+def get_embeddings() -> Embeddings:
     """Create or return cached embedding model instance."""
 
     global _embeddings
 
     if _embeddings is None:
-        _embeddings = HuggingFaceEmbeddings(
-            model_name=settings.embedding_model_name,
-            model_kwargs={"device": settings.embedding_device},
-        )
-        client = getattr(_embeddings, "_client", None)
-        if client is not None and hasattr(client, "max_seq_length"):
-            client.max_seq_length = settings.embedding_max_seq_length
+        provider = settings.embedding_provider
+
+        if provider == "huggingface":
+            _embeddings = HuggingFaceEmbeddings(
+                model_name=settings.embedding_model_name,
+                model_kwargs={"device": settings.embedding_device},
+            )
+            client = getattr(_embeddings, "_client", None)
+            if client is not None and hasattr(client, "max_seq_length"):
+                client.max_seq_length = settings.embedding_max_seq_length
+        elif provider == "gemini":
+            try:
+                from langchain_google_genai import GoogleGenerativeAIEmbeddings
+            except ImportError as exc:
+                raise RuntimeError(
+                    "Gemini embedding provider requires langchain-google-genai. "
+                    "Install it with: pip install langchain-google-genai"
+                ) from exc
+
+            if not settings.gemini_api_key:
+                raise ValueError(
+                    "Missing Gemini API key. Set GEMINI_API_KEY or GOOGLE_API_KEY "
+                    "when EMBEDDING_PROVIDER=gemini."
+                )
+
+            model_name = _normalize_gemini_embedding_model(settings.embedding_model_name)
+
+            _embeddings = GoogleGenerativeAIEmbeddings(
+                model=model_name,
+                google_api_key=settings.gemini_api_key,
+            )
+        else:
+            raise ValueError(
+                f"Unsupported embedding provider: {provider}. "
+                "Supported providers: huggingface, gemini"
+            )
 
     return _embeddings
 
@@ -170,13 +216,15 @@ def generate_answer(
         context_block = "No retrieved context available."
 
     prompt = (
-        "You are a helpful assistant for document question answering.\n"
+        "Bạn là Tử Kỳ, một người bạn đồng hành cùng học hỏi về kiến thức công nghệ.\n"
+        "Sử dụng đại từ 'mình' và 'bạn' khi trả lời để tạo cảm giác thân thiện và gần gũi.\n"
         "Use the context to answer accurately and avoid hallucination.\n"
-        "If the context does not contain enough information, clearly say so.\n\n"
-        f"Chat history:\n{history_block or 'No previous messages.'}\n\n"
-        f"Context:\n{context_block}\n\n"
-        f"Question: {question}\n"
-        "Answer:"
+        "Luôn bắt đầu bằng một lời dẫn dắt liên quan đến câu hỏi.\n"
+        "Nếu không có đủ thông tin trong ngữ cảnh, hãy nói rõ điều đó một cách khéo léo.\n\n"
+        f"Lịch sử trò chuyện:\n{history_block or 'No previous messages.'}\n\n"
+        f"Ngữ cảnh:\n{context_block}\n\n"
+        f"Câu hỏi: {question}\n"
+        "Trả lời:"
     )
 
     response = llm.invoke(prompt)

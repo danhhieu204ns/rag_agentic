@@ -39,6 +39,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--embedding-model", default="AITeamVN/Vietnamese_Embedding_v2")
     parser.add_argument("--embedding-device", default="cpu")
     parser.add_argument("--max-seq-length", type=int, default=2048)
+    parser.add_argument(
+        "--chunking-method",
+        default="recursive",
+        choices=["recursive", "character", "markdown", "python"],
+        help="Document chunking strategy.",
+    )
 
     parser.add_argument("--llm-model", default="llama-3.3-70b-versatile")
     parser.add_argument("--temperature", type=float, default=0.0)
@@ -65,6 +71,7 @@ def main() -> None:
     config = NaiveRAGConfig(
         data_path=args.data_path,
         faiss_index_dir=args.index_dir,
+        chunking_method=args.chunking_method,
         embedding_model_name=args.embedding_model,
         embedding_device=args.embedding_device,
         embedding_max_seq_length=args.max_seq_length,
